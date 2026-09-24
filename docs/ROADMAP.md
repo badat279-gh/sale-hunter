@@ -359,3 +359,60 @@ Possible later features:
 - Barcode/product-image search
 
 These features must not block the core deal engine.
+
+---
+
+# ARCHITECTURE RULE - MARKETPLACE ADAPTERS
+
+All marketplace-specific acquisition methods must stay behind replaceable adapters.
+
+The consumer website, product matcher and deal engine must work with normalized marketplace objects instead of raw Shopee/TikTok/Lazada response structures.
+
+Current Shopee acquisition method:
+
+Authenticated browser session
+→ Shopee web page
+→ Shopee-generated internal response
+→ ShopeeAdapter normalization
+
+This may later be replaced by an official, partner or affiliate API without redesigning the rest of Sale Hunter.
+
+---
+
+# V0.2-A - SHOPEE SEARCH CAPTURE
+
+Status: PASS
+
+Validated against Shopee Vietnam.
+
+Current search output includes:
+
+- item_id
+- shop_id
+- title
+- price
+- original_price
+- discount
+- image
+- shop_name
+- shop_location
+- sold
+- monthly_sold
+- rating
+- verified
+- product_url
+
+Next:
+
+V0.2-B
+Connect normalized Shopee search candidates to the consumer web UI.
+
+After that:
+
+V0.3
+Product Matching
+
+Only after matching:
+
+V0.4+
+Deal / voucher / shipping / final-price ranking

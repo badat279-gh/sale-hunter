@@ -276,3 +276,87 @@ At this stage:
 - TikTok Shop and Lazada may appear as "Coming soon" or disabled.
 
 Do not start advanced product matching before the first usable web shell exists.
+
+---
+
+## Architecture Decision - Replaceable Marketplace Adapters
+
+Marketplace acquisition logic must never become the core of Sale Hunter.
+
+Target architecture:
+
+MarketplaceAdapter
+├── ShopeeAdapter
+│   ├── Resolver
+│   ├── Product Detail
+│   ├── Search
+│   ├── Promotions
+│   ├── Shipping
+│   └── Final Price Inputs
+├── TikTokShopAdapter
+└── LazadaAdapter
+
+For Shopee, the current implementation uses an authenticated browser worker that intercepts responses produced by Shopee's own web application.
+
+This is an implementation detail, not a permanent dependency.
+
+Future Shopee data sources may include:
+- Official APIs
+- Partner APIs
+- Affiliate APIs
+- Browser-assisted capture
+- Other compliant data sources
+
+The rest of Sale Hunter must consume normalized marketplace data and must not depend on Shopee-specific response schemas.
+
+If Shopee changes its internal web schema, only ShopeeAdapter should require modification.
+
+## V0.2-A Shopee Search
+
+Status: PASS
+
+Validated with a real authenticated Shopee Vietnam session.
+
+The search engine can currently return real candidate listings containing:
+
+- item_id
+- shop_id
+- title
+- displayed price
+- original price
+- discount
+- currency
+- main image
+- shop name
+- shop location
+- historical sold count
+- monthly sold count
+- rating
+- verified status
+- sold-out status
+- direct product URL
+
+Shopee Vietnam search currently exposes normalized product data primarily through:
+- item_data
+- item_card_displayed_asset
+
+The adapter normalizes those Shopee-specific structures before returning data to Sale Hunter.
+
+## Next Exact Step
+
+V0.2-B - Expose Shopee search through the web application.
+
+Flow:
+
+Source product
+→ derive search query
+→ ShopeeAdapter search
+→ return candidate listings
+→ display candidates on the website
+
+Important:
+These are SEARCH CANDIDATES only.
+
+Do not label them "best price" yet.
+
+Product Matching must run before ranking.

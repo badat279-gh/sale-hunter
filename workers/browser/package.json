@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "login": "node src/login.mjs",
-    "probe": "node src/product_probe.mjs"
+    "probe": "node src/product_probe.mjs",
+    "search-probe": "node src/search_probe.mjs"
   },
   "keywords": [],
   "author": "",
