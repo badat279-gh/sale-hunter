@@ -1,63 +1,151 @@
 ﻿# SALE HUNTER ROADMAP
 
-## V0.0 - FOUNDATION
+## PRODUCT GOAL
 
-### V0.0.1
-- Repository
+Sale Hunter is a simple web app for normal users.
+
+Main flow:
+
+Paste product link
+→ Enter delivery address
+→ Identify exact product
+→ Search supported marketplaces
+→ Calculate realistic payable prices
+→ Return the best results independently for each marketplace
+
+Supported marketplaces:
+
+1. Shopee Vietnam
+2. TikTok Shop Vietnam
+3. Lazada Vietnam
+
+Development priority:
+
+Shopee
+→ TikTok Shop
+→ Lazada
+
+---
+
+# V0.0 - FOUNDATION
+
+## V0.0.1
+- GitHub repository
 - Project documentation
 - Base folder structure
 - Git workflow
 
-Status: CURRENT
+Status: PASS
 
 ---
 
-## V0.1 - SHOPEE PRODUCT RESOLVER
+# V0.1 - SHOPEE PRODUCT RESOLVER
 
 Goal:
-Paste a Shopee URL and identify the exact product.
+Read a real Shopee product from a pasted link.
 
-Required output:
+Completed:
 
-- Original URL
-- Canonical URL
-- shop_id
+- Full Shopee URL parser
+- Short-link resolver
+- shop_id extraction
+- item_id extraction
+- canonical URL
+- persistent authenticated browser session
+- Shopee pdp/get_pc response capture
+- product title
+- displayed price
+- currency
+- main image
+- shop name
+- shop location
+
+Status: PASS
+
+---
+
+# V0.1.5 - CONSUMER WEB SHELL
+
+Goal:
+Create the first website usable by a non-technical person.
+
+Initial route:
+
+http://localhost:3000
+
+Main UI:
+
+- Product link input
+- Delivery address input
+- Search button
+- Marketplace account status
+- Source product preview
+
+Marketplace sections:
+
+Shopee
+TikTok Shop
+Lazada
+
+Initial behavior:
+
+Shopee:
+- active
+
+TikTok Shop:
+- disabled / coming soon
+
+Lazada:
+- disabled / coming soon
+
+PASS condition:
+
+A normal user can open the website, paste a Shopee link, enter an address, click search, and see the source Shopee product information without using terminal commands.
+
+---
+
+# V0.2 - SHOPEE SEARCH
+
+Goal:
+Search Shopee for candidate listings related to the source product.
+
+Pipeline:
+
+Source product
+→ Generate search query
+→ Shopee search
+→ Capture candidate listings
+
+Required candidate data:
+
 - item_id
-- Product title
-- Main image
-- Current displayed price
-- Shop name
+- shop_id
+- title
+- displayed price
+- image
+- sold count
+- rating
+- seller location
+- product URL
+
+Initial search should collect more candidates than final results.
+
+Example:
+
+50-100 search candidates
+→ later matching/filtering
+→ final Top N
 
 PASS condition:
-A real Shopee Vietnam product URL can be resolved consistently.
+
+Search candidates can be captured reliably from Shopee Vietnam.
 
 ---
 
-## V0.2 - SHOPEE SEARCH
+# V0.3 - PRODUCT MATCHING
 
 Goal:
-Given the source product, search Shopee for possible equivalent listings.
-
-Required:
-
-- Keyword generation
-- Search result collection
-- Pagination
-- Seller information
-- Price
-- Rating
-- Sold count
-- Location
-
-PASS condition:
-System returns multiple candidate listings from a source product.
-
----
-
-## V0.3 - PRODUCT MATCHING
-
-Goal:
-Determine which search results represent the same actual product.
+Determine which candidate listings are genuinely the same product.
 
 Matching priority:
 
@@ -66,88 +154,120 @@ Matching priority:
 3. SKU
 4. Variant
 5. Category
-6. Normalized product title
-7. Text similarity
-8. Image similarity when required
+6. Normalized title
+7. Product attributes
+8. Text similarity
+9. Image similarity if required
+
+The system must avoid comparing different variants as if they were identical.
+
+Example:
+
+128GB
+must not be ranked against
+256GB
+
+unless the user explicitly allows variant alternatives.
 
 PASS condition:
-Unrelated products are rejected and equivalent listings are retained.
+
+Equivalent listings are retained.
+Incorrect products are rejected.
 
 ---
 
-## V0.4 - PRICE COMPARISON
+# V0.4 - DELIVERY ADDRESS ENGINE
 
 Goal:
-Rank confirmed equivalent Shopee listings.
+Use the user's delivery location when calculating deals.
 
-First stage:
+Initial address fields:
 
-Displayed product price.
+- Province / City
+- District
+- Ward
 
-Later stages:
+Later:
 
-- Shop discount
-- Shopee promotion
-- Voucher
-- Shipping
-- Payment discount
-- Coins when applicable
+- Full address
+- Saved profiles
 
-Final formula:
+Address should affect:
+
+- shipping fee
+- free shipping
+- delivery eligibility
+- seller region
+- delivery time
+- location-specific promotions
+
+PASS condition:
+
+The same product can produce different final costs for different delivery locations.
+
+---
+
+# V0.5 - SHOPEE DEAL ENGINE
+
+Goal:
+Calculate the best realistic payable price for each valid listing.
+
+Potential components:
+
+- Product discount
+- Flash sale
+- Shop voucher
+- Shopee platform voucher
+- Category voucher
+- Free shipping
+- Shipping fee
+- Payment voucher
+- Coins when actually usable
+- Account-specific discount when verifiable
+
+Formula:
 
 FINAL PRICE =
 PRODUCT PRICE
 - VALID DISCOUNTS
 + SHIPPING
 
+Every applied discount should be explainable in the UI.
+
 PASS condition:
-System produces a ranked list with explainable price calculation.
+
+Each listing has an auditable price breakdown.
 
 ---
 
-## V0.5 - SHOPEE DEAL ENGINE
+# V0.6 - SHOPEE TOP RESULTS
 
 Goal:
-Calculate the realistic payable price for the selected buyer context.
+Return the best results inside Shopee.
 
-Inputs may include:
+Default:
+Top 3
 
-- Delivery region
-- Voucher eligibility
-- Shop voucher
-- Platform voucher
-- Shipping promotion
-- Payment method
-- User-specific promotions
+Options later:
+Top 5
+Top 10
 
----
+Important:
 
-## V0.6 - WEB MVP
+The ranking is independent within Shopee.
 
-Minimal interface:
+The winner is based on final payable price, not listing price.
 
-Paste product URL
-→ Search
-→ Show original product
-→ Show matching products
-→ Show cheapest options
+PASS condition:
 
-No unnecessary dashboard features.
+The user sees the best Shopee links sorted by realistic final price.
 
 ---
 
-## V0.7 - PRICE HISTORY
+# V0.7 - TIKTOK SHOP ADAPTER
 
-- Save observations
-- Historical chart
-- Lowest recorded price
-- Detect price changes
-
----
-
-## V0.8 - TIKTOK SHOP ADAPTER
-
-Only begin after Shopee is stable.
+Goal:
+Implement the same marketplace interface for TikTok Shop.
 
 Required:
 
@@ -155,34 +275,87 @@ Required:
 - Product detail
 - Search
 - Product matching
-- Price normalization
+- Delivery-aware price
+- Voucher/discount data
+- Final price
+- Top N TikTok Shop results
 
-TikTok Shop output must conform to MarketplaceAdapter.
-
----
-
-## V0.9 - CROSS MARKETPLACE DEAL ENGINE
-
-Compare:
-
-Shopee
-vs
-TikTok Shop
-
-Rank by normalized final payable price.
+TikTok Shop results are ranked independently from Shopee.
 
 ---
 
-## FUTURE
+# V0.8 - LAZADA ADAPTER
 
-Possible later functionality:
+Goal:
+Implement the same marketplace interface for Lazada Vietnam.
 
+Required:
+
+- URL resolver
+- Product detail
+- Search
+- Product matching
+- Delivery-aware price
+- Voucher/discount data
+- Final price
+- Top N Lazada results
+
+Lazada results are ranked independently.
+
+---
+
+# V0.9 - MULTI-MARKETPLACE EXPERIENCE
+
+Input:
+One Shopee / TikTok Shop / Lazada product link.
+
+Output:
+
+Shopee:
+Top N best results
+
+TikTok Shop:
+Top N best results
+
+Lazada:
+Top N best results
+
+Each marketplace is ranked independently.
+
+The UI may also show an optional overall lowest price, but this must not replace the separate marketplace rankings.
+
+---
+
+# V1.0 - CONSUMER MVP
+
+Target user flow:
+
+1. Open Sale Hunter.
+2. Paste product link.
+3. Enter delivery address.
+4. Connect marketplace account if required.
+5. Click "Find best price".
+6. Review Top results for each marketplace.
+7. See full price breakdown.
+8. Open the chosen marketplace listing.
+
+No terminal usage should be required.
+
+---
+
+# FUTURE
+
+Possible later features:
+
+- Price history
 - Price alerts
+- Saved products
+- Saved addresses
 - Affiliate links
 - Browser extension
-- Mobile-friendly PWA
-- Personalized deal profiles
-- Local AI product understanding
-- Image-based product search
+- PWA/mobile install
+- Personalized deal profile
+- Automatic re-check
+- Barcode/product-image search
 
-These features must not block the core Shopee MVP.
+These features must not block the core deal engine.

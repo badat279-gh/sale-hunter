@@ -8,21 +8,152 @@ badat279-gh/sale-hunter
 
 ## Current Status
 V0.1 SHOPEE PRODUCT RESOLVER - PASS
+PRODUCT DIRECTION UPDATED
 
-## Main Objective
+## Product Definition
 
-Build a self-hosted sale hunting application focused primarily on Shopee Vietnam.
+Sale Hunter is a consumer-facing web application for people with no technical knowledge.
 
-A user will paste a product link and the system will:
+The user should NOT need to know about:
+- shop_id
+- item_id
+- Python
+- Node.js
+- Playwright
+- browser workers
+- APIs
+- Git
+- terminal commands
 
-1. Identify the product.
-2. Find equivalent listings.
-3. Compare sellers.
-4. Calculate discounts and shipping.
-5. Determine the real payable price.
-6. Return the cheapest valid option.
+The user experience must be:
 
-TikTok Shop will be added after the Shopee pipeline is stable.
+Open website
+→ Paste product link
+→ Enter delivery address
+→ Click search
+→ Receive the best results for each marketplace.
+
+## Supported Marketplaces
+
+Primary:
+1. Shopee Vietnam
+
+Secondary:
+2. TikTok Shop Vietnam
+3. Lazada Vietnam
+
+Development priority:
+
+Shopee first
+→ TikTok Shop
+→ Lazada
+
+The user interface may display all three marketplaces from the beginning, but marketplace engines should only be enabled after they are technically validated.
+
+## Core User Goal
+
+The user pastes ONE product link from:
+
+- Shopee
+- TikTok Shop
+- Lazada
+
+The system identifies the exact product and variant.
+
+Then it searches for the same product on each supported marketplace.
+
+Each marketplace is ranked independently.
+
+Example output:
+
+Shopee:
+- Best result #1
+- Best result #2
+- Best result #3
+
+TikTok Shop:
+- Best result #1
+- Best result #2
+- Best result #3
+
+Lazada:
+- Best result #1
+- Best result #2
+- Best result #3
+
+Default output:
+Top 3 per marketplace.
+
+Future option:
+Top 5 or Top 10.
+
+## Meaning of "Best Result"
+
+A result is NOT ranked only by displayed listing price.
+
+The ranking target is the lowest realistic payable price for the user.
+
+Expected formula:
+
+FINAL PRICE =
+PRODUCT PRICE
+- PRODUCT DISCOUNT
+- SHOP VOUCHER
+- PLATFORM VOUCHER
+- CATEGORY VOUCHER
+- ELIGIBLE PAYMENT DISCOUNT
+- ELIGIBLE COINS / BONUS
++ REAL SHIPPING FEE
+
+Only valid and applicable discounts should be counted.
+
+If a discount is conditional, the UI must clearly explain the condition.
+
+Example:
+
+Bank voucher:
+-100,000 VND
+Only if payment is made using the supported bank/card.
+
+The system must not present uncertain discounts as guaranteed final prices.
+
+## Delivery Address
+
+The user can enter a delivery address.
+
+The address is part of the deal calculation.
+
+Address may affect:
+
+- shipping fee
+- free shipping eligibility
+- delivery region
+- seller availability
+- delivery speed
+- platform promotions
+- regional restrictions
+
+The first useful address level may be:
+
+- Province / City
+- District
+- Ward
+
+Later versions may support:
+- full street address
+- saved delivery profiles
+
+## Account Connection
+
+To calculate personalized discounts accurately, the web application may allow the user to connect marketplace sessions.
+
+Example UI:
+
+Shopee       Connected / Connect
+TikTok Shop  Connected / Connect
+Lazada       Connected / Connect
+
+Technical browser login/session handling must remain hidden from the normal user.
 
 ## Current Architecture
 
@@ -32,11 +163,10 @@ Frontend:
 Backend:
 - Planned: FastAPI / Python
 
-Shopee browser worker:
+Marketplace browser workers:
 - Node.js
-- CloakBrowser
-- Playwright
-- Persistent authenticated Shopee session
+- CloakBrowser / Playwright where required
+- Persistent authenticated marketplace sessions
 
 Database:
 - Planned: PostgreSQL
@@ -45,7 +175,8 @@ Queue/cache:
 - Planned: Redis
 
 Local AI:
-- Optional later
+- Optional
+- Only when deterministic product matching is insufficient
 
 ## Current Version
 
@@ -71,14 +202,15 @@ V0.1 - Shopee Product Resolver
 - Real Shopee short-link test passed.
 
 ### Shopee Browser Worker
+- Node.js worker created.
 - CloakBrowser installed.
 - Playwright installed.
-- Persistent Shopee browser profile created.
-- Shopee login session successfully stored.
-- Shopee anti-bot protected pdp/get_pc response successfully captured.
+- Persistent Shopee profile created.
+- Shopee login session stored.
+- pdp/get_pc response successfully captured.
 
-### Real Product Detail
-Successfully retrieved from a real Shopee Vietnam product:
+### Real Shopee Product Detail
+Successfully extracted:
 
 - shop_id
 - item_id
@@ -89,7 +221,7 @@ Successfully retrieved from a real Shopee Vietnam product:
 - shop name
 - shop location
 
-Real test product:
+Real tested product:
 - shop_id: 423697084
 - item_id: 23032598294
 
@@ -101,45 +233,46 @@ Python URL resolver:
 Real Shopee short URL:
 - PASS.
 
-Authenticated Shopee browser session:
+Shopee authenticated browser:
 - PASS.
 
-Real Shopee pdp/get_pc capture:
+Shopee pdp/get_pc:
 - PASS.
 
-Real product detail extraction:
+Real Shopee product detail:
 - PASS.
 
 ## Known Issues
 
-- Windows PowerShell console may display some Vietnamese Unicode characters incorrectly.
-- This is currently considered a terminal display issue, not a product data acquisition failure.
-- Shopee browser access depends on a valid authenticated session.
-- Shopee anti-bot behavior may change over time.
+- PowerShell may display some Vietnamese Unicode characters incorrectly.
+- Web UI should use UTF-8 and should not inherit this terminal limitation.
+- Marketplace anti-bot behavior may change.
+- Personalized vouchers may require an authenticated marketplace session.
+- Not every voucher can be treated as guaranteed without validating eligibility.
 
 ## Currently Working On
 
-V0.1 finalization.
+V0.1.5 - Consumer Web Shell
 
 ## Next Exact Step
 
-V0.2 - Shopee Search.
+Build the first consumer-facing website shell.
 
-Given the source product:
+The web UI must initially support:
 
-1. Generate a useful search query from the source product.
-2. Search Shopee Vietnam.
-3. Capture search result data.
-4. Return candidate listings including:
-   - item_id
-   - shop_id
-   - title
-   - price
-   - image
-   - sold count
-   - rating
-   - seller location
+1. Product link input.
+2. Delivery address input.
+3. Marketplace connection status.
+4. Search button.
+5. Source product preview.
+6. Marketplace result sections:
+   - Shopee
+   - TikTok Shop
+   - Lazada
 
-Do not implement product matching yet.
+At this stage:
+- Shopee product preview should use the already validated resolver/product-detail pipeline.
+- Search/ranking does not need to be complete yet.
+- TikTok Shop and Lazada may appear as "Coming soon" or disabled.
 
-First prove that authenticated Shopee search results can be captured reliably.
+Do not start advanced product matching before the first usable web shell exists.
