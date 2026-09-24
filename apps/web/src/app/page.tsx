@@ -14,6 +14,25 @@ type Product = {
   shop_location?: string | null;
 };
 
+type SearchCandidate = {
+  item_id: number;
+  shop_id: number;
+  title: string;
+  price: number | null;
+  original_price: number | null;
+  discount: number | string | null;
+  currency: string;
+  image: string | null;
+  shop_name: string | null;
+  shop_location: string | null;
+  sold: number;
+  monthly_sold: number;
+  rating: number | null;
+  verified: boolean;
+  is_sold_out: boolean;
+  product_url: string;
+};
+
 const marketplaces = [
   {
     name: "Shopee",
@@ -42,6 +61,15 @@ function formatVnd(value?: number | null) {
   }).format(value);
 }
 
+function formatSold(value?: number | null) {
+  if (!value) return "0";
+
+  return new Intl.NumberFormat("vi-VN", {
+    notation: value >= 1000 ? "compact" : "standard",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 export default function Home() {
   const [productUrl, setProductUrl] = useState("");
   const [address, setAddress] = useState("");
@@ -49,6 +77,10 @@ export default function Home() {
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState<Product | null>(null);
+
+  const [candidates, setCandidates] = useState<SearchCandidate[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchCount, setSearchCount] = useState(0);
 
   async function handleSearch() {
     if (!productUrl.trim()) {
@@ -62,11 +94,14 @@ export default function Home() {
     }
 
     setLoading(true);
-    setNotice("Đang nhận diện sản phẩm và đọc dữ liệu Shopee...");
+    setNotice("Đang nhận diện sản phẩm...");
     setProduct(null);
+    setCandidates([]);
+    setSearchQuery("");
+    setSearchCount(0);
 
     try {
-      const response = await fetch("/api/product", {
+      const productResponse = await fetch("/api/product", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,14 +112,62 @@ export default function Home() {
         }),
       });
 
-      const data = await response.json();
+      const productData = await productResponse.json();
 
-      if (!response.ok || !data.ok) {
-        throw new Error(data?.message || "Không thể đọc sản phẩm.");
+      if (!productResponse.ok || !productData.ok) {
+        throw new Error(
+          productData?.message || "Không thể đọc sản phẩm."
+        );
       }
 
-      setProduct(data.product);
-      setNotice("Đã nhận diện sản phẩm thành công.");
+      const sourceProduct = productData.product as Product;
+
+      setProduct(sourceProduct);
+
+      if (!sourceProduct?.title) {
+        setNotice(
+          "Đã nhận diện sản phẩm nhưng chưa có tên để tìm sản phẩm tương tự."
+        );
+        return;
+      }
+
+      setNotice(
+        "Đã nhận diện sản phẩm. Đang tìm ứng viên trên Shopee..."
+      );
+
+      const query = sourceProduct.title.trim();
+
+      const searchResponse = await fetch("/api/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+        }),
+      });
+
+      const searchData = await searchResponse.json();
+
+      if (!searchResponse.ok || !searchData.ok) {
+        setNotice(
+          searchData?.message ||
+            "Đã nhận diện sản phẩm nhưng chưa tìm được ứng viên Shopee."
+        );
+        return;
+      }
+
+      const results = Array.isArray(searchData.results)
+        ? searchData.results
+        : [];
+
+      setCandidates(results);
+      setSearchQuery(searchData.query || query);
+      setSearchCount(searchData.returned_count || results.length);
+
+      setNotice(
+        `Đã tìm thấy ${results.length} ứng viên Shopee.`
+      );
     } catch (error) {
       setNotice(
         error instanceof Error
@@ -129,9 +212,8 @@ export default function Home() {
               </h1>
 
               <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 md:text-lg">
-                Sale Hunter nhận diện sản phẩm, tính phí giao hàng và tổng hợp
-                ưu đãi hợp lệ để tìm những nơi bán tốt nhất trên Shopee,
-                TikTok Shop và Lazada.
+                Sale Hunter nhận diện sản phẩm, tìm các nơi đang bán cùng
+                sản phẩm và chuẩn bị dữ liệu để so sánh giá thực trả.
               </p>
             </div>
 
@@ -172,7 +254,7 @@ export default function Home() {
                   disabled={loading}
                   className="w-full rounded-2xl bg-orange-500 px-5 py-4 text-base font-black text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {loading ? "ĐANG KIỂM TRA..." : "TÌM GIÁ TỐT NHẤT"}
+                  {loading ? "ĐANG TÌM..." : "TÌM GIÁ TỐT NHẤT"}
                 </button>
 
                 {notice && (
@@ -188,10 +270,12 @@ export default function Home() {
         {product && (
           <section className="mt-8">
             <div className="mb-4">
-              <h2 className="text-2xl font-black">Sản phẩm bạn đang tìm</h2>
+              <h2 className="text-2xl font-black">
+                Sản phẩm bạn đang tìm
+              </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Sale Hunter đã nhận diện sản phẩm gốc từ link bạn gửi.
+                Sản phẩm gốc được nhận diện từ link bạn gửi.
               </p>
             </div>
 
@@ -225,14 +309,18 @@ export default function Home() {
 
                 <div className="mt-5 grid gap-3 text-sm md:grid-cols-2">
                   <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                    <div className="text-xs text-slate-500">Shop</div>
+                    <div className="text-xs text-slate-500">
+                      Shop
+                    </div>
                     <div className="mt-1 font-bold">
                       {product.shop_name || "Chưa xác định"}
                     </div>
                   </div>
 
                   <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                    <div className="text-xs text-slate-500">Vị trí shop</div>
+                    <div className="text-xs text-slate-500">
+                      Vị trí shop
+                    </div>
                     <div className="mt-1 font-bold">
                       {product.shop_location || "Chưa xác định"}
                     </div>
@@ -243,12 +331,149 @@ export default function Home() {
           </section>
         )}
 
+        {candidates.length > 0 && (
+          <section className="mt-8">
+            <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+              <div>
+                <div className="mb-2 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
+                  ỨNG VIÊN TÌM KIẾM
+                </div>
+
+                <h2 className="text-2xl font-black">
+                  Sản phẩm tìm thấy trên Shopee
+                </h2>
+
+                <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
+                  Đây mới là danh sách ứng viên tìm kiếm. Sale Hunter chưa
+                  xác nhận tất cả là cùng một sản phẩm và chưa xếp hạng giá
+                  tốt nhất.
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-slate-200">
+                <span className="text-slate-500">Tìm thấy </span>
+                <span className="font-black">
+                  {searchCount}
+                </span>
+                <span className="text-slate-500">
+                  {" "}ứng viên
+                </span>
+              </div>
+            </div>
+
+            {searchQuery && (
+              <div className="mb-4 rounded-2xl bg-white px-4 py-3 text-xs text-slate-500 ring-1 ring-slate-200">
+                Từ khóa tìm kiếm:{" "}
+                <span className="font-semibold text-slate-700">
+                  {searchQuery}
+                </span>
+              </div>
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {candidates.map((candidate) => (
+                <article
+                  key={`${candidate.shop_id}-${candidate.item_id}`}
+                  className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200"
+                >
+                  <div className="aspect-square overflow-hidden bg-slate-100">
+                    {candidate.image ? (
+                      <img
+                        src={candidate.image}
+                        alt={candidate.title}
+                        className="h-full w-full object-cover transition duration-300 hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                        Không có ảnh
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4">
+                    <div className="mb-2 flex items-center gap-2">
+                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-[11px] font-black text-orange-600">
+                        SHOPEE
+                      </span>
+
+                      {candidate.verified && (
+                        <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                          Đã xác minh
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="line-clamp-2 min-h-12 text-sm font-bold leading-6">
+                      {candidate.title}
+                    </h3>
+
+                    <div className="mt-3 flex items-end gap-2">
+                      <div className="text-xl font-black text-orange-500">
+                        {formatVnd(candidate.price)}
+                      </div>
+
+                      {candidate.original_price &&
+                        candidate.original_price !==
+                          candidate.price && (
+                          <div className="pb-0.5 text-xs text-slate-400 line-through">
+                            {formatVnd(
+                              candidate.original_price
+                            )}
+                          </div>
+                        )}
+                    </div>
+
+                    <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                      <span>
+                        ⭐{" "}
+                        {candidate.rating
+                          ? candidate.rating.toFixed(1)
+                          : "—"}
+                      </span>
+
+                      <span>•</span>
+
+                      <span>
+                        Đã bán {formatSold(candidate.sold)}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 border-t border-slate-100 pt-3">
+                      <div className="truncate text-xs font-bold text-slate-700">
+                        {candidate.shop_name ||
+                          "Chưa xác định shop"}
+                      </div>
+
+                      <div className="mt-1 truncate text-xs text-slate-400">
+                        {candidate.shop_location ||
+                          "Chưa xác định vị trí"}
+                      </div>
+                    </div>
+
+                    <a
+                      href={candidate.product_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-4 block rounded-xl bg-slate-900 px-3 py-2.5 text-center text-xs font-black text-white transition hover:bg-slate-700"
+                    >
+                      Xem trên Shopee
+                    </a>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="mt-8">
           <div className="mb-4">
-            <h2 className="text-2xl font-black">Kết quả theo nền tảng</h2>
+            <h2 className="text-2xl font-black">
+              Kết quả theo nền tảng
+            </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Mỗi sàn sẽ có bảng xếp hạng riêng. Mặc định Top 3.
+              Bảng Top 3 chỉ được kích hoạt sau khi Product Matching và
+              Deal Engine hoàn thành.
             </p>
           </div>
 
@@ -259,7 +484,9 @@ export default function Home() {
                 className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
               >
                 <div className="flex items-center justify-between gap-4">
-                  <h3 className="text-lg font-black">{marketplace.name}</h3>
+                  <h3 className="text-lg font-black">
+                    {marketplace.name}
+                  </h3>
 
                   <span
                     className={
@@ -283,7 +510,7 @@ export default function Home() {
                       </span>
 
                       <span className="text-sm text-slate-400">
-                        Chưa có kết quả
+                        Chờ Product Matching
                       </span>
                     </div>
                   ))}
