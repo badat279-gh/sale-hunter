@@ -7,7 +7,7 @@ Repository:
 badat279-gh/sale-hunter
 
 ## Current Status
-INITIAL PROJECT SETUP
+V0.1 SHOPEE PRODUCT RESOLVER - PASS
 
 ## Main Objective
 
@@ -26,62 +26,120 @@ TikTok Shop will be added after the Shopee pipeline is stable.
 
 ## Current Architecture
 
-Planned stack:
-
 Frontend:
-- Next.js / React
+- Planned: Next.js / React
 
 Backend:
-- FastAPI / Python
+- Planned: FastAPI / Python
 
-Browser worker:
+Shopee browser worker:
+- Node.js
+- CloakBrowser
 - Playwright
+- Persistent authenticated Shopee session
 
 Database:
-- PostgreSQL
+- Planned: PostgreSQL
 
 Queue/cache:
-- Redis
+- Planned: Redis
 
-Local AI when required:
-- Ollama
-- embeddings
-- image similarity
+Local AI:
+- Optional later
 
 ## Current Version
 
-V0.0.1 - Project bootstrap
+V0.1 - Shopee Product Resolver
 
 ## Completed
 
+### Project foundation
 - GitHub repository created.
-- Initial project directory structure defined.
-- Project operating rules documented.
-- Initial roadmap created.
+- Base directory structure created.
+- AGENTS.md created.
+- ROADMAP created.
+- Git workflow established.
 
-## Currently Working On
+### Shopee URL Resolver
+- Validate Shopee Vietnam URLs.
+- Parse standard Shopee product URLs.
+- Extract shop_id.
+- Extract item_id.
+- Generate canonical product URL.
+- Detect Shopee short URLs.
+- Resolve real s.shopee.vn short links.
+- Real Shopee short-link test passed.
 
-Project bootstrap and technical validation.
+### Shopee Browser Worker
+- CloakBrowser installed.
+- Playwright installed.
+- Persistent Shopee browser profile created.
+- Shopee login session successfully stored.
+- Shopee anti-bot protected pdp/get_pc response successfully captured.
+
+### Real Product Detail
+Successfully retrieved from a real Shopee Vietnam product:
+
+- shop_id
+- item_id
+- title
+- displayed price
+- currency
+- main image
+- shop name
+- shop location
+
+Real test product:
+- shop_id: 423697084
+- item_id: 23032598294
 
 ## Tests Passed
 
-None yet.
+Python URL resolver:
+- 8/8 automated tests PASS.
+
+Real Shopee short URL:
+- PASS.
+
+Authenticated Shopee browser session:
+- PASS.
+
+Real Shopee pdp/get_pc capture:
+- PASS.
+
+Real product detail extraction:
+- PASS.
+
+## Known Issues
+
+- Windows PowerShell console may display some Vietnamese Unicode characters incorrectly.
+- This is currently considered a terminal display issue, not a product data acquisition failure.
+- Shopee browser access depends on a valid authenticated session.
+- Shopee anti-bot behavior may change over time.
+
+## Currently Working On
+
+V0.1 finalization.
 
 ## Next Exact Step
 
-Research and validate the Shopee data acquisition path.
+V0.2 - Shopee Search.
 
-The first technical experiment must prove that the system can:
+Given the source product:
 
-1. Accept a Shopee product URL.
-2. Resolve the URL.
-3. Extract Shopee item_id and shop_id or equivalent identifiers.
-4. Retrieve basic product information.
+1. Generate a useful search query from the source product.
+2. Search Shopee Vietnam.
+3. Capture search result data.
+4. Return candidate listings including:
+   - item_id
+   - shop_id
+   - title
+   - price
+   - image
+   - sold count
+   - rating
+   - seller location
 
-Do not begin frontend development before this experiment is validated.
+Do not implement product matching yet.
 
-## Important
-
-No assumptions should be made that Shopee endpoints remain stable.
-
-All Shopee access must be implemented behind a dedicated adapter so it can be replaced without rewriting the rest of the application.
+First prove that authenticated Shopee search results can be captured reliably.
