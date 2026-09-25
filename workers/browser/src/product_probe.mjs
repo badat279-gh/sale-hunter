@@ -103,6 +103,8 @@ try {
           image,
           shop_name: shopName,
           shop_location: item?.shop_location ?? null,
+          category_id: item?.cat_id ?? item?.catid ?? null,
+          global_category_id: item?.global_cat ?? null,
         },
         null,
         2
@@ -119,3 +121,4 @@ try {
 } finally {
   await context.close();
 }
+

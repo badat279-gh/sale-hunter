@@ -7,7 +7,18 @@ const PROFILE_DIR =
   process.env.SHOPEE_PROFILE_DIR ||
   path.join(os.homedir(), ".sale-hunter", "shopee-profile");
 
-const query = process.argv.slice(2).join(" ").trim();
+const args = process.argv.slice(2);
+
+let pageIndex = 0;
+
+if (
+  args.length > 1 &&
+  /^\d+$/.test(args[args.length - 1])
+) {
+  pageIndex = Number(args.pop());
+}
+
+const query = args.join(" ").trim();
 
 if (!query) {
   console.error('Usage: npm run search-probe -- "tu khoa"');
@@ -16,7 +27,7 @@ if (!query) {
 
 const searchUrl =
   `https://${DOMAIN}/search?keyword=${encodeURIComponent(query)}` +
-  `&page=0&sortBy=relevancy`;
+  `&page=${pageIndex}&sortBy=relevancy`;
 
 const context = await launchPersistentContext({
   userDataDir: PROFILE_DIR,
@@ -81,6 +92,14 @@ function normalizeItem(entry) {
 
     shop_location:
       asset?.shop_location ??
+      null,
+
+    category_id:
+      data?.catid ??
+      null,
+
+    global_category:
+      data?.global_cat ??
       null,
 
     sold:
@@ -157,13 +176,14 @@ try {
       ).values()
     );
 
-    const results = unique.slice(0, 30);
+    const results = unique.slice(0, 60);
 
     console.log(
       JSON.stringify(
         {
           ok: true,
           query,
+          page: pageIndex,
           total_count: json?.total_count ?? null,
           raw_items_count: rawItems.length,
           normalized_count: normalized.length,
@@ -187,3 +207,6 @@ try {
 } finally {
   await context.close();
 }
+
+
+

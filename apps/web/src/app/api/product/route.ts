@@ -129,9 +129,11 @@ export async function POST(request: Request) {
         }
       );
 
-    const product = extractJsonObject(
-      `${probeStdout}\n${probeStderr ?? ""}`
-    );
+    const product = extractJsonObject(probeStdout);
+
+    if (probeStderr?.trim()) {
+      console.error("SHOPEE_PRODUCT_PROBE_STDERR", probeStderr);
+    }
 
     if (!product.ok) {
       return NextResponse.json(
@@ -170,3 +172,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

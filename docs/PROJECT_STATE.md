@@ -360,3 +360,109 @@ These are SEARCH CANDIDATES only.
 Do not label them "best price" yet.
 
 Product Matching must run before ranking.
+
+---
+
+## V0.3 - Product Matching Pipeline
+
+Status: PASS
+
+Validated end-to-end with a real Shopee Vietnam product.
+
+Current pipeline:
+
+Source product
+→ derive model/search queries
+→ multi-query Shopee search
+→ multi-page discovery
+→ deduplicate candidates
+→ category filter
+→ normalized text/model matching
+→ shortlist candidates
+→ image perceptual-hash comparison
+→ final hybrid match decision
+
+Current matching statuses:
+
+- confirmed
+- possible
+- rejected
+
+Safety rule:
+
+If there is not enough evidence that two listings are the same product,
+the candidate must NOT be treated as an equivalent product.
+
+A missing result is preferable to a false product match.
+
+### Validated real test
+
+Source product:
+Abi Mini Bag - BARAS
+
+Automated pipeline result:
+
+- 4 generated search queries
+- pages 0, 1, 2
+- 718 raw collected results
+- 492 unique candidates
+- 172 candidates after category filter
+- 172 text-matched candidates
+- 30 image-checked candidates
+- 0 confirmed
+- 0 possible
+- 30 rejected
+
+This result is considered correct for the tested product because the system did not falsely accept other BARAS models such as:
+
+- Rumba Bag
+- Morgan Bag
+- Enzo Bag
+- Murphy Bag
+- Miller Bag
+- Jackson Bag
+- Paxton Bag
+- Titanus Bag
+
+### Matching components now implemented
+
+- dynamic source title
+- dynamic source shop
+- dynamic source category
+- dynamic source image
+- model phrase extraction
+- model conflict rejection
+- category filtering
+- text similarity
+- image similarity using perceptual hash
+- hybrid final score
+- multi-query discovery
+- multi-page discovery
+- candidate deduplication
+
+### Current implementation detail
+
+Image matching currently uses:
+
+- Pillow
+- ImageHash
+- perceptual hash (pHash)
+
+Python dependencies are documented in:
+
+packages/product-matcher/requirements.txt
+
+### Next Exact Step
+
+V0.3-F3 - Connect the automatic product-matching pipeline to the web backend and consumer UI.
+
+Target user flow:
+
+Paste Shopee link
+→ source product is detected
+→ automatic discovery runs
+→ product matching runs
+→ confirmed / possible matches are shown
+→ rejected candidates remain hidden by default
+
+No manual JSON files or terminal matcher steps should be required.

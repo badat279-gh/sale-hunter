@@ -144,6 +144,10 @@ export default function Home() {
         },
         body: JSON.stringify({
           query,
+          sourceProduct: {
+            title: sourceProduct.title,
+            shop_name: sourceProduct.shop_name,
+          },
         }),
       });
 
@@ -523,3 +527,4 @@ export default function Home() {
     </main>
   );
 }
+

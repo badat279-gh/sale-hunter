@@ -416,3 +416,62 @@ Only after matching:
 
 V0.4+
 Deal / voucher / shipping / final-price ranking
+
+---
+
+# V0.3 IMPLEMENTATION STATUS
+
+Status: CORE PIPELINE PASS
+
+Implemented:
+
+- Dynamic source product matching
+- Model phrase extraction
+- Model conflict detection
+- Multi-query search discovery
+- Multi-page search
+- Candidate deduplication
+- Category filtering
+- Text similarity
+- Image pHash similarity
+- Hybrid match scoring
+- Confirmed / Possible / Rejected statuses
+
+Validated real pipeline:
+
+4 search queries
+× 3 Shopee pages
+→ 718 raw candidates
+→ 492 unique candidates
+→ 172 same-category candidates
+→ 30 image-checked finalists
+→ 0 false confirmed results
+
+Important matching rule:
+
+Different product models must not be promoted only because:
+- they are from the same shop,
+- titles are similar,
+- or product photos look visually similar.
+
+If confidence is insufficient, return no equivalent listing.
+
+Next:
+
+V0.3-F3
+Connect the automatic matching pipeline to the consumer web application.
+
+After web integration:
+
+V0.3-G
+Optimize runtime with:
+- parallel search execution
+- search cache
+- image-hash cache
+- early stopping
+- reduced duplicate browser work
+
+Only after reliable product matching:
+
+V0.4
+Delivery Address Engine
