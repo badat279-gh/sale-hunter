@@ -466,3 +466,61 @@ Paste Shopee link
 → rejected candidates remain hidden by default
 
 No manual JSON files or terminal matcher steps should be required.
+
+---
+
+## V0.3-F3 - Consumer Web Matching Integration
+
+Status: PASS
+
+The automatic product-matching pipeline is now connected to the consumer web application.
+
+User flow:
+
+Paste Shopee link
+→ identify source product
+→ automatically run multi-query / multi-page discovery
+→ category filter
+→ text/model matching
+→ image matching
+→ show confirmed / possible results
+
+Rejected candidates remain hidden by default.
+
+Validated real UI test:
+
+Source:
+Abi Mini Bag - BARAS
+
+Observed result:
+
+- 509 unique products scanned
+- 173 same-category candidates
+- 30 image-checked candidates
+- 0 confirmed
+- 0 possible
+
+The UI correctly displayed:
+
+"Chưa tìm thấy shop khác được xác nhận bán cùng sản phẩm"
+
+The old raw-search candidate grid is no longer used as the consumer result.
+
+No terminal matcher workflow is required for the normal user.
+
+## Next Exact Step
+
+V0.3-G - Runtime optimization.
+
+Priorities:
+
+1. Run independent search queries/pages concurrently where safe.
+2. Cache search results.
+3. Cache downloaded image hashes.
+4. Avoid repeated source-image downloads.
+5. Add early stopping when enough high-confidence matches are found.
+6. Measure real end-to-end runtime.
+
+After runtime optimization and stability checks:
+
+V0.4 - Delivery Address Engine.

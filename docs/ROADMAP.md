@@ -475,3 +475,39 @@ Only after reliable product matching:
 
 V0.4
 Delivery Address Engine
+
+---
+
+# V0.3-F3 - WEB INTEGRATION
+
+Status: PASS
+
+The Product Matching pipeline is connected to the consumer website.
+
+Validated UI flow:
+
+Shopee product link
+→ source product preview
+→ automated discovery
+→ category filtering
+→ text/model matching
+→ image matching
+→ consumer-facing result
+
+Rejected search candidates are hidden.
+
+If no product can be confirmed as equivalent, the UI explicitly reports that no other confirmed seller was found instead of showing a false cheaper alternative.
+
+Validated test:
+- 509 unique products scanned
+- 173 category matches
+- 30 image checks
+- 0 false confirmed matches
+
+Next:
+
+V0.3-G - Runtime Optimization
+
+Then:
+
+V0.4 - Delivery Address Engine
